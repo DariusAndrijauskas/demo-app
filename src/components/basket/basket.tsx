@@ -40,7 +40,7 @@ export const Basket = () => {
         }
         setNotificationStyle(style);
     };
-    return <div ref={basketRef} style={{marginLeft: '300px'}}>
+    return <div ref={basketRef}>
         <BiBasket size={25} title='basket' />
         {notification && <NotificationBox key={notification.id} id={notification.id} style={notificationStyle} />}
     </div>;
