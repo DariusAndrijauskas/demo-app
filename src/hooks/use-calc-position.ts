@@ -10,8 +10,10 @@ export const useCalculatePosition = (ref : React.RefObject<HTMLDivElement>) => {
     useEffect(() => {
         handleResize();
         window.addEventListener('resize', handleResize);
+        window.addEventListener('scroll', handleResize);
         return () => {
             window.removeEventListener('resize', handleResize);
+            window.removeEventListener('scroll', handleResize);
         }
     }, []);
         
@@ -19,15 +21,21 @@ export const useCalculatePosition = (ref : React.RefObject<HTMLDivElement>) => {
         const basket = ref.current?.getBoundingClientRect();
         if (!basket) return {};
         const newStyle: React.CSSProperties = {};
-        const viewportWidth = window.innerWidth;
+        const viewportWidth = document.documentElement.clientWidth;
+        const scrollLeft = window.scrollX
         const ntBoxStopDist = ntBoxWidth / 2 + margin;
-        const basketXcenter = basket.left + basket.width / 2;
+        const basketXcenter = basket.left + basket.width / 2 + scrollLeft;
+        const leftWall = scrollLeft;
+        const rightWall = viewportWidth + scrollLeft;
         if (viewportWidth > mobileCutOff) {
             newStyle.left = basketXcenter;
-            if (basketXcenter < ntBoxStopDist) newStyle.left = ntBoxStopDist;
-            if (basketXcenter > (viewportWidth - ntBoxStopDist)) newStyle.left = viewportWidth - ntBoxStopDist;
-        } else {
-            newStyle.left = ntBoxStopDist - margin / 2;
+            if (basketXcenter + ntBoxStopDist > rightWall) 
+                newStyle.left = rightWall - ntBoxStopDist;
+            if (basketXcenter - ntBoxStopDist < leftWall) 
+                newStyle.left = leftWall + ntBoxStopDist;
+        }
+        else {
+            newStyle.left = ntBoxStopDist - margin / 2 + scrollLeft;
             newStyle.width = viewportWidth - margin;
         }
         return newStyle;
