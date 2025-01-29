@@ -5,25 +5,22 @@ import { useEventSubscribe } from '../../hooks';
 import { NotificationBox } from './notification-box';
 
 export const Basket = () => {
-    const [notification, setNotification] = useState<Notification>();
-    const [notificationStyle, setNotificationStyle] = useState<React.CSSProperties>({});
+    const [notification, setNotification] = useState<Notification>({ id: 0, style: { display: 'none' } });
     const basketRef = useRef<HTMLDivElement>(null);
-    const handleAddBasketItem = ({ id }: Notification) => {
-        setNotification({ id });
-        calculatePosition();
-    }
+    const handleAddBasketItem = ({ id }: Notification) => setNotification({ id, style: calculatePosition() });
+    const handleResize = () => setNotification({...notification, style: calculatePosition()});
     useEventSubscribe(EventName.addBasketItem, handleAddBasketItem);
     
     useEffect(() => {
-        window.addEventListener('resize', calculatePosition);
+        window.addEventListener('resize', handleResize);
         return () => {
-            window.removeEventListener('resize', calculatePosition);
+            window.removeEventListener('resize', handleResize);
         }
-    }, []);
+    });
         
     const calculatePosition = () => {
         const basket = basketRef.current?.getBoundingClientRect();
-        if (!basket) return;
+        if (!basket) return {};
         const style: React.CSSProperties = {};
         const viewportWidth = window.innerWidth;
         const margin = 16;
@@ -38,10 +35,10 @@ export const Basket = () => {
             style.left = ntBoxStopDist - margin / 2;
             style.width = viewportWidth - margin;
         }
-        setNotificationStyle(style);
+        return style;
     };
     return <div ref={basketRef}>
         <BiBasket size={25} title='basket' />
-        {notification && <NotificationBox key={notification.id} id={notification.id} style={notificationStyle} />}
+        {notification && <NotificationBox key={notification.id} id={notification.id} style={notification.style} />}
     </div>;
 }
